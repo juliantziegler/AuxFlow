@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.init_for_gt_tests.GetInitialFrames
+batch_size: 1

@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.track_homographies_with_nbjw_points_regular_grid_use_line_ransac.HTracker
+batch_size: 1

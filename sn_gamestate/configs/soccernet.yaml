@@ -1,0 +1,133 @@
+# TrackLab SoccerNet config
+
+# The defaults list contains the files that will be used
+# to create the final config file. This item *must* be
+# the first element in the file.
+# Detailed configs for each default component below are located in "sn-gamestate/sn-gamestate/configs" and "tracklab/tracklab/configs"
+# Define here which implementation (yolov8, oc_sort, ..) to use for each generic (detection, tracking, ...) component.
+defaults:
+  - dataset: soccernet_gs
+  - eval: gs_hota
+  - engine: offline
+  - state: save  # Dump tracking results to a .pcklz file to save computation time on the next run. Have a look at TrackLab tutorials for more details.
+  - visualization: gamestate  # Save tracking results as a .mp4 video in the run directory specified below (sn-gamestate/outputs/...)
+  - modules/bbox_detector: dump_gt #dump_gt #yolov8 #dump_gt #gt_bbox #yoloSN #yolov8
+  - modules/reid: prtreid
+  - modules/track: bpbreid_strong_sort
+  - modules/jersey_number_detect: mmocr
+  - modules/team: kmeans_embeddings
+  - modules/team_side: mean_position
+  - modules/tracklet_agg: voting_role_jn
+  - modules/pitch : nbjw_calib #tvcalib
+  - modules/calibration:  nbjw_calib_homography
+  - modules/tracking_unet: unet
+  - modules/tracking_initialization: init_region_based #simple_init
+  - modules/tracking_trackers: lukas_kanade_tracker_with_nbjw_keypoints_regular_grid #lukas_kanade_tracker_with_nbjw_keypoints_regular_grid #_use_line_ransac #_gtinit #sift_tracker #_gtinit
+  - modules/apply_homography: transform_detections
+  - modules/iou_part_metric: cam_params #iou_part
+  - _self_
+
+# Pipeline definition :
+# - Defines the order in which the modules will be called
+# - If loading a tracking state from disk, remove modules whose outputs are already provided in the loaded state
+# Use 'pipeline: []' for an empty pipeline (e.g. when loading all tracking results from a saved .pklz tracker state)
+pipeline:
+  - bbox_detector
+  #- reid
+  #- track
+  #- pitch
+  - calibration
+  - tracking_unet
+  - tracking_initialization
+  - tracking_trackers
+  
+
+  - apply_homography
+  #- iou_part_metric
+  #- jersey_number_detect
+  #- tracklet_agg
+  #- team
+  #- team_side
+
+
+# Experiment name
+experiment_name: 'propagate_homographies'
+
+# Path definitions
+home_dir: "${oc.env:HOME}"
+data_dir: "/data2/SoccerNetData"
+model_dir: "${project_dir}/pretrained_models"
+
+# Machine configuration
+num_cores: 12
+use_wandb: False
+use_rich: True
+
+modules: # Allows module-specific batch_size and other configuration
+  bbox_detector: {batch_size: 1}
+  pose_bottomup: {batch_size: 8}
+  reid: {batch_size: 64}
+  track: {batch_size: 64}
+  pitch: {batch_size: 1}
+  calibration: {batch_size: 1}
+  jersey_number_detect: {batch_size: 8}
+  tracking_unet: {batch_size: 1}
+
+# Flags
+test_tracking: True
+eval_tracking: True
+print_config: False
+
+# Dataset
+dataset:
+  nvid: -1  # For a quick first inference, only the first video is processed. Use "-1" to process all the videos.
+  #nframes: 8 # For testing on only a few frames, set to a positive number. Will disable evaluation !
+  eval_set: 'test'  # Tracking is performed on the SoccerNet validation set. Choose from {"train", "valid", "test", "challenge"}.
+  dataset_path: ${data_dir}/SoccerNetGS  # The SoccerNet game state dataset is located under the data path (defined above) in the 'SoccerNetGS' folder
+  vids_dict: # Use one key per split (valid, test, etc)
+    #test: ['SNGS-117', 'SNGS-124', 'SNGS-128', 'SNGS-138', 'SNGS-193', 'SNGS-136', 'SNGS-150', 'SNGS-123', 'SNGS-191', 'SNGS-187'] #['SNGS-125'] #['SNGS-004', 'SNGS-017', 'SNGS-001', 'SNGS-012', 'SNGS-020', 'SNGS-010', 'SNGS-019', 'SNGS-007', 'SNGS-016', 'SNGS-172', 'SNGS-009', 'SNGS-013', 'SNGS-183', 'SNGS-002', 'SNGS-006', 'SNGS-176', 'SNGS-015', 'SNGS-186', 'SNGS-171', 'SNGS-181', 'SNGS-174', 'SNGS-184', 'SNGS-179', 'SNGS-018', 'SNGS-005', 'SNGS-014', 'SNGS-008', 'SNGS-178', 'SNGS-180', 'SNGS-173', 'SNGS-177', 'SNGS-175', 'SNGS-182', 'SNGS-003', 'SNGS-011']  #'SNGS-185'#'SNGS-138', 'SNGS-194', 'SNGS-195', 'SNGS-196', 'SNGS-200', 'SNGS-129', 'SNGS-130', 'SNGS-131'] #, 'SNGS-187', 'SNGS-188', 'SNGS-189', 'SNGS-190', 'SNGS-191', 'SNGS-192', 'SNGS-193'] #, , 'SNGS-132', 'SNGS-133', 'SNGS-134', 'SNGS-135', 'SNGS-136'] #, 'SNGS-149', 'SNGS-135', 'SNGS-144', 'SNGS-187'] #, 'SNGS-142']  # , 'SNGS-144', , 'SNGS-142'Specify explicitly which video to apply tracking on, e.g. ['SNGS-04', 'SNGS-51'] . Ignored when left empty.
+    #test: ['SNGS-117']
+    test:
+# Tracker state (save computation time by dumping tracking results on disk for later re-use)
+state:
+  save_file: '/data2/tracking_states/states/${experiment_name}.pklz'  #'null' to disable saving. This is the save path for the tracker_state object that contains all modules outputs (bboxes, reid embeddings, jersey numbers, roles, teams, etc)
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_better_param_lukas_kanade_full_run/2025-04-17/00-05-19/states/sn-gamestate_better_param_lukas_kanade_full_run.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_baseline/2025-04-08/11-15-02/states/sn-gamestate_baseline.pklz' # '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_generating_results/2025-04-10/20-35-52/states/sn-gamestate_tracking_generating_results.pklz' ##'/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_corrected/2025-04-10/15-23-25/states/sn-gamestate_tracking_corrected.pklz' #'/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_baseline/2025-04-08/11-15-02/states/sn-gamestate_baseline.pklz'  # 'null' to disable loading. Load a file that was saved with the 'state.save_file' option above. Don't forget to remove from the pipeline all modules that should not be run again, but loaded from the saved tracker state.
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_generating_results/2025-04-11/14-12-41/states/sn-gamestate_tracking_generating_results.pklz'
+  #load_file: '/data2/tracking_states/states/gt_detections_nbjw.pklz'
+  load_file:  null #'/data2/tracking_states/states/gt_detections_ours_best_new_random_what_the_hell_is_going_on_regular_grid_use_line_ransac.pklz'
+  #load_file: '/data2/older SoccerNet logs/sn-gamestate_baseline/2025-04-17/00-55-00_this_for_reference/states/sn-gamestate_baseline.pklz'
+  #load_file: '/data2/tracking_states/states/gt_detections_testing_trying_other_iou_pitch.pklz'
+  #load_file: '/data2/tracking_states/states/gt_detections_nbjw.pklz'
+  #load_file: '/data2/tracking_states/states/gt_detections_ours_best_new_random_what_the_hell_is_going_on_regular_grid_use_line_ransac.pklz'
+  #load_file: '/data2/tracking_states/states/gt_detections_ours_lol_as_if.pklz'
+  #load_file: '/data2/tracking_states/states/newLK-test.pklz'
+  #load_file: '/data2/tracking_states/states/gt_detections_ours_best_new_random_what_the_hell_is_going_on_regular_grid_use_line_ransac.pklz' #'/data2/tracking_states/states/gt_detections_paper_reg_grid_tau_5.pklz'
+  #load_file: '/data2/tracking_states/states/newLK-challenge_please.pklz'
+  #load_file: '/data2/tracking_states/states/sn-challenge-fallback.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_baseline/2025-04-17/00-55-00_this_for_reference/states/sn-gamestate_baseline.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_lk_only_best_unet_fill_big_gaps_75_099/2025-04-22/15-05-06/states/sn-gamestate_lk_only_best_unet_fill_big_gaps_75_099.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_current_best/2025-04-14/08-38-37_real_current_best/states/sn-gamestate_tracking_current_best.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_unet_test_starting_point/2025-04-17/13-42-49/states/sn-gamestate_unet_test_starting_point.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_better_param_lukas_kanade_full_run/2025-04-17/00-05-19/states/sn-gamestate_better_param_lukas_kanade_full_run.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_current_best/2025-04-13/23-47-09/states/sn-gamestate_tracking_current_best.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_gt_bbox_basline_nbjw/2025-04-13/10-23-23/states/sn-gamestate_gt_bbox_basline_nbjw.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_generating_results_gt_tracking/2025-04-11/15-14-10/states/sn-gamestate_tracking_generating_results_gt_tracking.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_better_param_lukas_kanade/2025-04-16/23-40-19/states/sn-gamestate_better_param_lukas_kanade.pklz'
+  #load_file: '/home/ziegler/MA/SoccerNet/outputs/sn-gamestate_tracking_current_best/2025-04-13/23-47-09/states/sn-gamestate_tracking_current_best.pklz'
+# Visualization
+visualization:
+  cfg:
+    save_videos: False  # Save a .mp4 video on disk with the game state reconstruction output (see 'tracklab/tracklab/configs/visualization' for more options)
+
+# configure Hydra to use the current working directory
+# and set up the output directory according to experiment_name
+project_dir: "${hydra:runtime.cwd}"
+hydra:
+  output_subdir: "configs"
+  job:
+    chdir: True
+  run:
+    dir: "outputs/${experiment_name}/${now:%Y-%m-%d}/${now:%H-%M-%S}"
+  sweep:
+    dir: "multirun_outputs/${experiment_name}/${now:%Y-%m-%d}/${now:%H-%M-%S}"

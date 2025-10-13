@@ -1,0 +1,2 @@
+_target_: sn_gamestate.iou_metrics.iou_part.IoUPartMetric
+batch_size: 1

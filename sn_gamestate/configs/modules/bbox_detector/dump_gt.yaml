@@ -1,0 +1,2 @@
+_target_: sn_gamestate.bbox_detector.dump_gt_without_pitch.DumpGT
+batch_size: 1

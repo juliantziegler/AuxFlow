@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.initialize_with_keypoints_and_unet_score.GetInitialFrames
+batch_size: 1

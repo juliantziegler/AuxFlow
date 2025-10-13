@@ -1,0 +1,2 @@
+_target_: sn_gamestate.iou_metrics.tracked_homographies_get_cam.HTransform
+batch_size: 1

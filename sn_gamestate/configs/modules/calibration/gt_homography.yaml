@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.gt_homography.GTHomography
+batch_size: 1

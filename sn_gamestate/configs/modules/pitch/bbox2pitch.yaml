@@ -1,0 +1,4 @@
+_target_: sn_gamestate.calibration.bbox2pitch.Bbox2Pitch
+image_width: 1920
+image_height: 1080
+batch_size: 1

@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.track_homographies_sift.HTracker
+batch_size: 1

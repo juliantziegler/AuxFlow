@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.apply_tracked_homographies.HTransform
+batch_size: 1

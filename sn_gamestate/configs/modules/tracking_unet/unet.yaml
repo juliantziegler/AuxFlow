@@ -1,0 +1,2 @@
+_target_: sn_gamestate.homography_tracking.homography_unet.Unet
+batch_size: 1
