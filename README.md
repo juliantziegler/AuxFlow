@@ -1,5 +1,5 @@
 # AuxFlow: Anchor-Grounded Homography Estimation through Flow-Guided Auxiliary Points for Soccer Field Registration and Player Localization
-
+![Project Logo](GraphicalAbstract.png)
 ## Abstract
 
 We introduce AuxFlow, a novel, temporally-aware pipeline for homography estimation and field registration in challenging football broadcast footage. To overcome the temporal instability and high performance variance of existing per-frame keypoint methods, our AuxFlow approach combines a robust frame-wise keypoint model with a temporal propagation strategy. The system automatically identifies high-confidence "anchor" frames where it estimates the homography solely based on the keypoint model, before sampling auxiliary points, which are re-identified in neighbouring frames using optical flow to establish dense, coherent correspondences across the sequence. This significantly enhances the stability and accuracy of the estimated homographies. Our evaluation on the SoccerNet GSR dataset shows consistent, measurable improvements in robustness and smoothness over existing State-of-the-Art, enabling highly reliable player localization invaluable for downstream applications.
