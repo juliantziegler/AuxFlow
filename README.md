@@ -1,7 +1,7 @@
 # AuxFlow: Anchor-Grounded Homography Estimation through Flow-Guided Auxiliary Points for Soccer Field Registration and Player Localization
 
 
->**[AuxFlow: Anchor-Grounded Homography Estimation through Flow-Guided Auxiliary Points for Soccer Field Registration and Player Localization, CVIU](https://arxiv.org/abs/2412.01721](https://doi.org/10.1016/j.cviu.2026.104662))**
+>**[AuxFlow: Anchor-Grounded Homography Estimation through Flow-Guided Auxiliary Points for Soccer Field Registration and Player Localization, CVIU]((https://doi.org/10.1016/j.cviu.2026.104662))**
 >Julian Ziegler, Daniel Matthes, Patrick Frenzel, Mirco Fuchs
 
 ![Project Logo](GraphicalAbstract.png)
